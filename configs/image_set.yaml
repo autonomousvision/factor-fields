@@ -1,0 +1,59 @@
+
+defaults:
+  expname: basis_image
+  logdir: ./logs
+
+  mode: 'images'
+
+  ckpt: null                  # help='specific weights npy file to reload for coarse network'
+
+model:
+  basis_dims: [32,32,32,16,16,16]
+  basis_resos:  [32,51,70,89,108,128]
+  freq_bands: [2. , 3.2, 4.4, 5.6, 6.8, 8.]
+  
+  
+  coeff_reso: 32
+  total_params: 1024000 
+  
+  coef_init: 0.001
+
+  coef_mode: bilinear
+  basis_mode: bilinear
+
+
+  coeff_type: 'grid'
+  basis_type: 'grid'
+
+  in_dim: 3
+  out_dim: 3
+  num_layers: 2
+  hidden_dim: 64
+  with_dropout: True
+
+dataset:
+  # loader options
+  dataset_name: images 
+  datadir: data/ffhq/ffhq_512.npy
+
+training:
+  n_iters: 300000
+  batch_size: 40960
+
+  # learning rate
+  lr_small: 0.002
+  lr_large: 0.002
+
+
+
+
+
+
+
+
+
+
+
+
+
+

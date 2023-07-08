@@ -1,0 +1,66 @@
+
+defaults:
+  expname: basis_image
+  logdir: ./logs
+
+  mode: 'image'
+
+  ckpt: null                  # help='specific weights npy file to reload for coarse network'
+
+model:
+  basis_dims: [32,32,32,16,16,16]
+  basis_resos: [32,51,70,89,108,128]
+  freq_bands: [2. , 3.2, 4.4, 5.6, 6.8, 8.]
+
+  total_params: 1426063 # albert
+  # total_params: 61445328 # pluto
+  # total_params: 71848800 #Girl_with_a_Pearl_Earring
+  # total_params: 37138096 # Weissenbruch_Jan_Hendrik_The_Shipping_Canal_at_Rijswijk.jpeg_base
+  
+  coeff_type: 'grid'
+  basis_type: 'grid'
+  
+  coef_init: 0.001
+
+  coef_mode: nearest
+  basis_mode: nearest
+  basis_mapping: 'sawtooth'
+
+
+  in_dim: 2
+  out_dim: 3
+  num_layers: 2
+  hidden_dim: 64
+  with_dropout: False
+  
+dataset:
+  # loader options
+  dataset_name: image
+  datadir: "../data/image/albert.exr"
+  # datadir: "../data/image//pluto.jpeg"
+  # datadir: "../data/image//Girl_with_a_Pearl_Earring.jpeg"
+  # datadir: "../data/image//Weissenbruch_Jan_Hendrik_The_Shipping_Canal_at_Rijswijk.jpeg"
+
+
+training:
+  n_iters: 10000
+  batch_size: 102400
+
+  # learning rate
+  lr_small: 0.002
+  lr_large: 0.002
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 

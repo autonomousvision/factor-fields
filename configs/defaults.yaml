@@ -1,0 +1,72 @@
+
+defaults:
+  expname:  basis_lego
+  logedir: ./logs
+
+  mode: 'reconstruction'
+
+  progress_refresh_rate: 10
+
+  add_timestamp: 0
+
+model:
+  basis_dims: [4,4,4,2,2,2]
+  basis_resos: [32,51,70,89,108,128]
+  coeff_reso: 32
+  total_params: 10744166
+  T_basis: 0
+  T_coeff: 0
+
+  coef_init: 1.0
+  coef_mode: bilinear
+  basis_mode: bilinear
+
+  freq_bands: [1.0000, 1.3300, 1.7689, 2.3526, 3.1290, 4.1616]
+
+
+  basis_mapping: 'sawtooth'
+  with_dropout: False
+
+  in_dim: 3
+  out_dim: 32
+  num_layers: 2
+  hidden_dim: 128
+
+dataset:
+  # loader options
+  dataset_name: blender # choices=['blender', 'llff', 'nsvf', 'dtu','tankstemple', 'own_data']
+  datadir: ./data/nerf_synthetic/lego
+
+  with_depth: 0
+  downsample_train: 1.0
+  downsample_test: 1.0
+
+  is_unbound: False
+
+training:
+  # training options
+  batch_size: 4096
+  n_iters: 30000
+
+  # learning rate
+  lr_small: 0.001
+  lr_large: 0.02
+
+  lr_decay_iters: -1
+  lr_decay_target_ratio: 0.1    # help = 'number of iterations the lr will decay to the target ratio; -1 will set it to n_iters'
+  lr_upsample_reset: 1          # help='reset lr to inital after upsampling'
+
+  # loss
+  L1_weight_inital: 0.0         # help='loss weight'
+  L1_weight_rest: 0
+  Ortho_weight: 0.0
+  TV_weight_density: 0.0
+  TV_weight_app: 0.0
+
+  # optimiziable
+  coeff: True
+  basis: True
+  linear_mat: True
+  renderModule: True
+
+

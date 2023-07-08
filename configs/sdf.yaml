@@ -1,0 +1,46 @@
+defaults:
+  expname: basis_sdf
+  logdir: ./logs
+
+  mode: 'sdf'
+
+  ckpt: null                  # help='specific weights npy file to reload for coarse network'
+
+model:
+  basis_dims: [4,4,4,2,2,2]
+  basis_resos: [32,51,70,89,108,128]
+  freq_bands:  [2. , 3.2, 4.4, 5.6, 6.8, 8.]
+  
+  total_params: 5313942
+  
+  coeff_reso: 32
+  coef_init: 0.05
+
+  coef_mode: bilinear
+  basis_mode: bilinear
+
+
+  coeff_type: 'grid'
+  basis_type: 'grid'
+  kernel_mapping_type: 'sawtooth'
+
+  in_dim: 3
+  out_dim: 1
+  num_layers: 1
+  hidden_dim: 64
+
+dataset:
+  # loader options
+  dataset_name: sdf 
+  datadir: "../data/mesh/statuette_close.npy"
+  
+  scene_reso: 384
+  
+
+training:
+  n_iters: 10000
+  batch_size: 40960
+
+  # learning rate
+  lr_small: 0.002
+  lr_large: 0.02

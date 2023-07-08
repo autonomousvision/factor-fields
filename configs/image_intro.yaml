@@ -1,0 +1,65 @@
+
+defaults:
+  expname: basis_image
+  logdir: ./logs
+
+  mode: 'demo'
+
+  ckpt: null                  # help='specific weights npy file to reload for coarse network'
+
+model:
+  in_dim: 2
+  out_dim: 1
+
+  basis_dims: [32,32,32,16,16,16]
+  basis_resos: [32,51,70,89,108,128]
+  freq_bands: [2. , 3.2, 4.4, 5.6, 6.8, 8.]
+
+
+  
+
+
+  # occNet
+  coeff_type: 'none'
+  basis_type: 'x'
+  basis_mapping: 'x'
+  num_layers: 8
+  hidden_dim: 256
+
+  
+  # coef_init: 0.001
+
+  # coef_mode: nearest
+  # basis_mode: nearest
+  # basis_mapping: 'sawtooth'
+
+  with_dropout: False
+  
+dataset:
+  # loader options
+  dataset_name: image
+  datadir: ../data/image/cat_occupancy.png
+
+
+training:
+  n_iters: 10000
+  batch_size: 102400
+
+  # learning rate
+  lr_small: 0.0002
+  lr_large: 0.0002
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 

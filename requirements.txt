@@ -1,0 +1,11 @@
+imageio==2.26.0
+kornia==0.6.10
+lpips==0.1.4
+matplotlib==3.7.1
+omegaconf==2.3.0
+opencv_python==4.7.0.72
+plyfile==0.7.4
+scikit-image
+tqdm==4.65.0
+trimesh==3.20.2
+jupyterlab

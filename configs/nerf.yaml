@@ -1,0 +1,93 @@
+defaults:
+  expname: basis_lego
+  logdir: ./logs
+
+  mode: 'reconstruction'
+
+  ckpt: null                  # help='specific weights npy file to reload for coarse network'
+
+model:
+  coeff_reso: 32
+
+  basis_dims: [4,4,4,2,2,2]
+  basis_resos: [32,51,70,89,108,128]
+  freq_bands:  [2. , 3.2, 4.4, 5.6, 6.8, 8.]
+#  freq_bands:  [1. , 2., 3., 4., 5., 6.]
+
+
+  coef_init: 1.0
+  phases: [0.0]
+  total_params: 5308416
+
+  coef_mode: bilinear
+  basis_mode: bilinear
+
+  coeff_type: 'grid'
+  basis_type: 'grid'
+  basis_mapping: 'sawtooth'
+
+  in_dim: 3
+  out_dim: 32
+  num_layers: 2
+  hidden_dim: 64
+
+dataset:
+  # loader options
+  dataset_name: blender # choices=['blender', 'llff', 'nsvf', 'dtu','tankstemple', 'own_data']
+  datadir: ./data/nerf_synthetic/lego
+  ndc_ray: 0
+
+  with_depth: 0
+  downsample_train: 1.0
+  downsample_test: 1.0
+
+  N_vis: 5
+  vis_every: 100000
+  scene_reso: 768
+
+training:
+
+  n_iters: 30000
+  batch_size: 4096
+
+  volume_resoInit: 128 # 128**3：
+  volume_resoFinal: 300 # 300**3
+
+  upsamp_list: [2000,3000,4000,5500,7000]
+  update_AlphaMask_list: [2500,4000]
+  shrinking_list: [500]
+
+  L1_weight_inital: 0.0
+  L1_weight_rest: 0.0
+
+  TV_weight_density: 0.000
+  TV_weight_app: 0.00
+
+exporation:
+  render_only: 0
+  render_test: 1
+  render_train: 0
+  render_path: 0
+  export_mesh: 0
+  export_mesh_only: 0
+
+renderer:
+  shadingMode: MLP_Fea
+  num_layers: 3
+  hidden_dim: 128
+
+  fea2denseAct: 'softplus'
+  density_shift: -10
+  distance_scale: 25.0
+
+  view_pe: 6
+  fea_pe: 2
+
+  lindisp: 0
+  perturb: 1          # help='set to 0. for no jitter, 1. for jitter'
+
+  step_ratio: 0.5
+  max_samples: 1200
+
+  alphaMask_thres: 0.02
+  rayMarch_weight_thres: 1e-3
