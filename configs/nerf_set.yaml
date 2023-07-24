@@ -68,7 +68,7 @@ training:
   TV_weight_density: 0.000
   TV_weight_app: 0.00
 
-exporation:
+exportation:
   render_only: 0
   render_test: 0
   render_train: 0

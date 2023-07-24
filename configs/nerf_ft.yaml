@@ -72,7 +72,7 @@ training:
   linear_mat: False
   renderModule: False
 
-exporation:
+exportation:
   render_only: 0
   render_test: 1
   render_train: 0
