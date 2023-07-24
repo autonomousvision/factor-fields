@@ -32,11 +32,22 @@ if __name__ == '__main__':
 
 	################  per scene NeRF  ################
 	######  uncomment the following five lines if you want to train on all scenes #########
-	# cmds = []
-	# for name in commands.keys(): #
-	# 	for scene in ['ship']:#'ship', 'mic', 'chair', 'lego', 'drums', 'ficus', 'hotdog', 'materials'
-	# 		cmd = f'python train_per_scene.py configs/nerf.yaml defaults.expname={scene}{name} dataset.datadir=./data/nerf_synthetic/{scene} {commands[name]}'
-	# 		cmds.append(cmd)
+	cmds = []
+	for name in commands.keys(): #
+		# for scene in ['ship', 'mic', 'chair', 'lego', 'drums', 'ficus', 'hotdog', 'materials']:#
+		# 	cmd = f'python train_per_scene.py configs/nerf.yaml defaults.expname={scene}{name} dataset.datadir=./data/nerf_synthetic/{scene} {commands[name]}'
+		# 	cmds.append(cmd)
+
+		for scene in ['Ignatius','Truck']:#
+			if scene != 'Ignatius':
+				cmd = f'python train_per_scene.py configs/nerf.yaml defaults.expname={scene}{name} dataset.datadir=./data/TanksAndTemple/{scene} {commands[name]} ' \
+					f' dataset.dataset_name=tankstemple '
+				cmds.append(cmd)
+		
+			cmd = f'python train_per_scene.py configs/nerf.yaml defaults.expname={scene}{name} dataset.datadir=./data/TanksAndTemple/{scene} {commands[name]} ' \
+				f' dataset.dataset_name=tankstemple exportation.render_only=1 exportation.render_path=1 exportation.render_test=0 ' \
+				f' defaults.ckpt=/mnt/qb/home/geiger/zyu30/Projects/Anpei/Code/factor-fields/logs/{scene}-grid/{scene}-grid.th '
+			cmds.append(cmd)
 
 	################  generalization NeRF  ################
 	commands = {
@@ -53,11 +64,11 @@ if __name__ == '__main__':
 			# '-hash-sl': f'model.basis_type=hash model.coef_init=1.0 model.basis_dims=[16] model.freq_bands=[8.] model.basis_resos=[64] ', \
 		# '-DCT':'model.basis_type=fix-grid', \
 		}
-	for name in commands.keys(): #
-		config = commands[name]
-		config = f'python train_across_scene2.py configs/nerf_set.yaml defaults.expname=google-obj{name} {config} ' \
-				f'training.volume_resoFinal=128 dataset.datadir=./data/google_scanned_objects/'
-		cmds.append(config)
+	# for name in commands.keys(): #
+	# 	config = commands[name]
+	# 	config = f'python train_across_scene2.py configs/nerf_set.yaml defaults.expname=google-obj{name} {config} ' \
+	# 			f'training.volume_resoFinal=128 dataset.datadir=./data/google_scanned_objects/'
+	# 	cmds.append(config)
 
 
 	# # =========> fine tuning <================
@@ -110,7 +121,7 @@ if __name__ == '__main__':
 
 	# os.makedirs(f"log/{expFolder}", exist_ok=True)
 	def run_program(gpu, cmd):
-		cmd = f'CUDA_VISIBLE_DEVICES={gpu}  {cmd} '
+		cmd = f'{cmd} '
 		print(cmd)
 		os.system(cmd)
 		gpus_que.put(gpu)
@@ -127,3 +138,15 @@ if __name__ == '__main__':
 	for th in ths:
 		th.join()
 
+
+# import os 
+# import numpy as np
+# root = f'/mnt/qb/home/geiger/zyu30/Projects/Anpei/Code/factor-fields/logs/'
+# # root = '/cluster/home/anchen/root/Code/NeuBasis/log/'
+# scores = []
+# # for scene in ['ship', 'mic', 'chair', 'lego', 'drums', 'ficus', 'hotdog', 'materials']:
+# for scene in ['Caterpillar','Family','Ignatius','Truck']:
+# 	scores.append(np.loadtxt(f'{root}/{scene}-grid/imgs_test_all/mean.txt'))
+# 	# os.system(f'cp {root}/{scene}-grid/imgs_test_all/video.mp4 /mnt/qb/home/geiger/zyu30/Projects/Anpei/Code/factor-fields/logs/video/{scene}.mp4')
+# 	os.system(f'cp {root}/{scene}-grid/{scene}-grid/imgs_path_all/video.mp4 /mnt/qb/home/geiger/zyu30/Projects/Anpei/Code/factor-fields/logs/video/{scene}.mp4')
+# # print(np.mean(np.stack(scores),axis=0))

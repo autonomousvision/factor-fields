@@ -33,7 +33,7 @@ Please ensure that you download the corresponding dataset and extract its conten
 The training script can be found at `scripts/2D_regression.ipynb`, and the configuration file is located at `configs/image.yaml`.
 
 <p align="left">
-  <img src="media/Girl_with_a_Pearl_Earring.jpg" alt="Girl with a Pearl Earring" width="500">
+  <img src="media/Girl_with_a_Pearl_Earring.jpg" alt="Girl with a Pearl Earring" width="320">
 </p>
 
 ## SDF
@@ -64,7 +64,7 @@ python train_per_scene.py configs/nerf.yaml defaults.expname=lego dataset.datadi
 The training script can be found at `2D_set_regression.ipynb`
 
 <p align="left">
-  <img src="media/inpainting.png" alt="Inpainting" width="500">
+  <img src="media/inpainting.png" alt="Inpainting" width="640">
 </p>
 
 
@@ -80,27 +80,30 @@ python train_across_scene.py configs/nerf_set.yaml
 
 
 ## More examples
-Command explanation with a nerf example:
-* `model.basis_dims=[4,4,4,2,2,2]` adjust number of the levels and channel at each level, 6 levels and 18 channels in total.
-* `model.basis_resos=[32,51,70,89,108,128]` the resolution of the feature embeddings.
-* `model.freq_bands=[2.,3.2,4.4,5.6,6.8,8.]` the frequency parameters applied at each level of the coordinate transformation function.
-* `model.coeff_type` coefficient field representations. Can be one of [none, x, grid, mlp, vec, cp, vm].
-* `model.basis_type` basis field representation. Can be one of [none, x, grid, mlp, vec, cp, vm, hash].
-* `model.basis_mapping` coordinate transformation. Can be one of [x, triangle, sawtooth, trigonometric]. Note that, if you want to use orthogonal projection, please choose the cp or vm basis tyep, it automatically use the orthogonal projection functions.
-* `model.total_params` controlling the total model size. Note that, the capability of the model size is controlled by the model.basis_resos and model.basis_dims, the total_params are basically for the capability of the coefficients.
 
-Some pre-defined configurations (such as, occNet, DVGO, nerf, iNGP, EG3D) can be found at `README_FactorField.py`. 
+Command explanation with a nerf example:
+* `model.basis_dims=[4, 4, 4, 2, 2, 2]` adjusts the number of levels and channels at each level, with a total of 6 levels and 18 channels.
+* `model.basis_resos=[32, 51, 70, 89, 108, 128]` represents the resolution of the feature embeddings.
+* `model.freq_bands=[2.0, 3.2, 4.4, 5.6, 6.8, 8.0]` indicates the frequency parameters applied at each level of the coordinate transformation function.
+* `model.coeff_type` represents the coefficient field representations and can be one of the following: [none, x, grid, mlp, vec, cp, vm].
+* `model.basis_type` represents the basis field representation and can be one of the following: [none, x, grid, mlp, vec, cp, vm, hash].
+* `model.basis_mapping` represents the coordinate transformation and can be one of the following: [x, triangle, sawtooth, trigonometric]. Please note that if you want to use orthogonal projection, choose the cp or vm basis type, as they automatically utilize the orthogonal projection functions.
+* `model.total_params` controls the total model size. It is important to note that the model's size capability is determined by model.basis_resos and model.basis_dims. The total_params parameter mainly affects the capability of the coefficients.
+* `exportation.render_only` you can rendering item after training by setting this label to 1. Please also specify the `defaults.ckpt` label.
+* `exportation....` you can specify whether to render the items of `[render_test, render_train, render_path, export_mesh]` after training by enable the corressponding label to 1.
+
+Some pre-defined configurations (such as occNet, DVGO, nerf, iNGP, EG3D) can be found in `README_FactorField.py`.
 
 
 ## COPY RIGHT
-* [Summer Day](https://www.rijksmuseum.nl/en/collection/SK-A-3005), credit goes to Johan Hendrik Weissenbruch and rijksmuseum.
-* [Mars](https://solarsystem.nasa.gov/resources/933/true-colors-of-pluto/), credit goes to NASA.
-* [Albert](https://cdn.loc.gov/service/pnp/cph/3b40000/3b46000/3b46000/3b46036v.jpg), credit goes to Orren Jack Turner.
-* [Girl With a Pearl Earring](http://profoundism.com/free_licenses.html), renovation copyright Koorosh Orooj (CC BY-SA 4.0).
+* [Summer Day](https://www.rijksmuseum.nl/en/collection/SK-A-3005) - Credit goes to Johan Hendrik Weissenbruch and rijksmuseum.
+* [Mars](https://solarsystem.nasa.gov/resources/933/true-colors-of-pluto/) - Credit goes to NASA.
+* [Albert](https://cdn.loc.gov/service/pnp/cph/3b40000/3b46000/3b46000/3b46036v.jpg) - Credit goes to Orren Jack Turner.
+* [Girl With a Pearl Earring](http://profoundism.com/free_licenses.html) - Renovation copyright Koorosh Orooj (CC BY-SA 4.0).
 
 
 ## Citation
-If you find our code or paper helps, please consider citing both of these two papers:
+If you find our code or paper helpful, please consider citing both of these papers:
 ```
 @article{Chen2023factor,
   title={Factor Fields: A Unified Framework for Neural Fields and Beyond},
