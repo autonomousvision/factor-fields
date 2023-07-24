@@ -272,7 +272,6 @@ class FactorFields(torch.nn.Module):
             self.T_basis = self.cfg.model.T_basis if self.cfg.model.T_basis>0 else sum(np.power(np.array(self.basis_reso), self.in_dim) * np.array(self.cfg.model.basis_dims))
             self.T_coeff = self.cfg.model.T_coeff if self.cfg.model.T_coeff>0 else self.cfg.model.total_params - self.T_basis
             self.T_coeff = self.T_coeff if self.T_coeff > 0 else 8 ** self.in_dim * sum(self.basis_dims)
-            print(self.T_basis,self.T_coeff,self.T_coeff )
 
             if 'image' == self.cfg.defaults.mode:
                 self.freq_bands = max(aabb[1][:self.in_dim]) / torch.FloatTensor(self.basis_reso).to(self.device)
@@ -421,17 +420,11 @@ class FactorFields(torch.nn.Module):
                             0.1 * torch.randn((1, basis_dim, max(reso, 128), 1), device=self.device)))
                 elif 'x' in self.basis_type:
                     continue
-                    # basises.append(torch.nn.Parameter(0.1 * torch.randn((1, basis_dim, 1, 1), device=self.device)))
-                # elif 'vec' in self.basis_type:
-                #     for _ in range(self.in_dim):
-                #         basises.append(torch.nn.Parameter(0.1 * torch.randn((1, basis_dim, reso*2, 1))))
         return torch.nn.ParameterList(basises)
 
     def get_coeff(self, xyz_sampled):
         N_points, dim = xyz_sampled.shape
-        # print(xyz_sampled.shape, self.aabb)
         in_dim = self.in_dim
-        # in_dim = self.in_dim + 1  if 'images' == self.cfg.defaults.mode else self.in_dim
         pts = self.normalize_coord(xyz_sampled).view([1, -1] + [1] * (dim - 1) + [dim])
 
         if self.coeff_type in 'hash':
@@ -456,7 +449,6 @@ class FactorFields(torch.nn.Module):
                 coeffs = coeffs * F.grid_sample(self.coeffs[i], pts[..., i], mode=self.cfg.model.coef_mode,
                                                 align_corners=False, padding_mode='border').view(-1, N_points).t()
         elif 'vm' in self.coeff_type:
-            # pts = torch.flip(pts, dims=(-1,))
             pts = pts.squeeze(2)
             idx = (self.scene_idx + 0.5) / self.n_scene * 2 - 1
             pts = torch.stack((torch.ones_like(pts) * idx, pts), dim=-2)
@@ -476,7 +468,6 @@ class FactorFields(torch.nn.Module):
         N_points = x.shape[0]
         if 'images' == self.cfg.defaults.mode:
             x = x[..., :-1]
-
         if 'hash' in self.basis_type:
             x = (x - self.aabb[0]) / torch.max(self.aabb[1] - self.aabb[0])
             if len(self.basises) == 1:
@@ -515,9 +506,6 @@ class FactorFields(torch.nn.Module):
                             basises_level = basises_level * F.grid_sample(
                                 self.basises[i * (self.in_dim - 1) + idx_axis], coordinate_vec,
                                 align_corners=True).view(-1, x.shape[0]).t()
-                            # basises_level = torch.cat((basises_level, F.grid_sample(
-                            #     self.basises[i * (self.in_dim - 1) + idx_axis], coordinate_vec,
-                            #     align_corners=True).view(-1, x.shape[0]).t()),dim=-1)
                     basises.append(basises_level)
                 elif 'x' in self.basis_type:
                     basises.append(xyz[..., i].view(x.shape[0], -1))
@@ -536,20 +524,13 @@ class FactorFields(torch.nn.Module):
         if self.cfg.model.coeff_type != 'none' and self.cfg.model.basis_type != 'none':
             coeff = self.get_coeff(x)
             basises = self.get_basis(x)
-            # return basises, coeff
             return basises * coeff, coeff
-            # return torch.cat((basises, coeff),dim=-1), coeff
         elif self.cfg.model.coeff_type != 'none':
             coeff = self.get_coeff(x)
             return coeff, coeff
         elif self.cfg.model.basis_type != 'none':
             basises = self.get_basis(x)
             return basises, basises
-
-    # def get_coding_set(self, x):
-    #     basis = self.get_basis(x[..., :-1])
-    #     coeff = self.get_coeff(x)
-    #     return basis*coeff, coeff
 
     def n_parameters(self):
         total = sum(p.numel() for p in self.parameters())
@@ -567,10 +548,6 @@ class FactorFields(torch.nn.Module):
 
         if 'fix' not in self.cfg.model.basis_type and 'none' != self.cfg.model.basis_type and self.cfg.training.basis:
             grad_vars += [{'params': self.basises.parameters(), 'lr': lr_large}]
-
-            # elif isinstance(self.basises,list):
-            # grad_vars += [{'params': self.basises, 'lr': lr_large}] if  self.coeff_type != 'mlp'  \
-            #     else [{'params': self.basises.parameters(), 'lr': lr_large}]
 
         if 'reconstruction' in self.cfg.defaults.mode and self.cfg.training.renderModule:
             grad_vars += [{'params': self.renderModule.parameters(), 'lr': lr_small}]
@@ -624,39 +601,6 @@ class FactorFields(torch.nn.Module):
 
         return rays_pts, interpx, ~mask_outbbox
 
-    # def sample_point(self, rays_o, rays_d, is_train=True, N_samples=-1):
-    #     N_samples = N_samples if N_samples>0 else self.nSamples
-    #
-    #     N_inner,N_outer = 3*N_samples//4,N_samples//4
-    #     b_inner = torch.linspace(0.05, 2, N_inner+1).to(self.device)
-    #     b_outer = 2 / torch.linspace(1, 1/16, N_outer+1).to(self.device)
-    #
-    #     if is_train:
-    #         rng = torch.rand((N_inner+N_outer),device=self.device)
-    #         interpx = torch.cat([
-    #             b_inner[1:]*rng[:N_inner] + b_inner[:-1]*(1-rng[:N_inner]),
-    #             b_outer[1:]*rng[N_inner:] + b_outer[:-1]*(1-rng[N_inner:]),
-    #         ])[None]
-    #     else:
-    #         interpx = torch.cat([
-    #             (b_inner[1:] + b_inner[:-1]) * 0.5,
-    #             (b_outer[1:] + b_outer[:-1]) * 0.5,
-    #         ])[None]
-    #
-    #     rays_pts = rays_o[:,None,:] + rays_d[:,None,:] * interpx[...,None]
-    #
-    #     # norm = rays_pts.norm(dim=-1, keepdim=True)
-    #     norm = rays_pts.abs().amax(dim=-1, keepdim=True)
-    #     inner_mask = (norm<=1)
-    #     rays_pts = torch.where(
-    #         inner_mask,
-    #         rays_pts,
-    #         rays_pts / norm * ((1+self.bg_len) - self.bg_len/norm)
-    #     )
-    #
-    #     # interpx = torch.norm(rays_pts - rays_o[:,None,:],dim=-1)
-    #     return rays_pts, interpx, inner_mask.squeeze(-1)
-
     def sample_point_unbound(self, rays_o, rays_d, is_train=True, N_samples=-1):
         N_samples = N_samples if N_samples > 0 else self.nSamples
 
@@ -678,7 +622,6 @@ class FactorFields(torch.nn.Module):
 
         rays_pts = rays_o[:, None, :] + rays_d[:, None, :] * interpx[..., None]
 
-        # norm = rays_pts.norm(dim=-1, keepdim=True)
         norm = rays_pts.abs().amax(dim=-1, keepdim=True)
         inner_mask = (norm <= 1)
         rays_pts = torch.where(
@@ -687,7 +630,6 @@ class FactorFields(torch.nn.Module):
             rays_pts / norm * ((1 + self.bg_len) - self.bg_len / norm)
         )
 
-        # interpx = torch.norm(rays_pts - rays_o[:,None,:],dim=-1)
         return rays_pts, interpx, inner_mask.squeeze(-1)
 
     def normalize_coord(self, xyz_sampled):
@@ -749,17 +691,12 @@ class FactorFields(torch.nn.Module):
         self.update_renderParams(volumeSize)
 
     def update_renderParams(self, gridSize):
-        # print("aabb", self.aabb.view(-1))
-        # print("grid size", gridSize)
         self.aabbSize = self.aabb[1] - self.aabb[0]
-        # self.invaabbSize = 2.0/self.aabbSize
         self.gridSize = torch.LongTensor(gridSize).to(self.device)
         units = self.aabbSize / (self.gridSize - 1)
         self.stepSize = torch.mean(units) * self.cfg.renderer.step_ratio
         aabbDiag = torch.sqrt(torch.sum(torch.square(self.aabbSize)))
         self.nSamples = int((aabbDiag / self.stepSize).item()) + 1
-        # print("sampling step size: ", self.stepSize)
-        # print("sampling number: ", self.nSamples)
 
     @torch.no_grad()
     def upsample_volume_grid(self, res_target):
@@ -769,29 +706,6 @@ class FactorFields(torch.nn.Module):
             coeffs = [
                 F.interpolate(self.coeffs[0].data, size=None, scale_factor=1.3, align_corners=True, mode='trilinear')]
             self.coeffs = torch.nn.ParameterList(coeffs)
-        # elif self.cfg.model.coeff_type =='vm':
-        #     for i in range(len(self.vecMode)):
-        #         vec_id = self.vecMode[i]
-        #         mat_id_0, mat_id_1 = self.matMode[i]
-        #
-        #         self.basises[i] = torch.nn.Parameter(
-        #             F.interpolate(self.basises[i].data, size=(res_target[mat_id_1], res_target[mat_id_0]),
-        #                           mode='bilinear',
-        #                           align_corners=True))
-        #         # self.coeffs[i] = torch.nn.Parameter(
-        #         #     F.interpolate(self.coeffs[i].data, size=(res_target[vec_id], 1), mode='bilinear', align_corners=True))
-
-        # coeffs = F.interpolate(self.coeffs.data, size=None, scale_factor=2.0, align_corners=True,mode='trilinear')
-        # self.coeffs = torch.nn.Parameter(coeffs)
-        # print(coeffs.shape)
-
-        # basises = []
-        # for basis in self.basises:
-        #     basises.append(torch.nn.Parameter(
-        #         F.interpolate(basis.data, scale_factor=1.3, mode='trilinear',align_corners=True)))
-        #     print(basises[-1].shape)
-        # self.basises = torch.nn.ParameterList(basises)
-        # print(f'upsamping to {res_target}')
 
     def compute_alpha(self, xyz_locs, length=1):
 
@@ -804,7 +718,6 @@ class FactorFields(torch.nn.Module):
         sigma = torch.zeros(xyz_locs.shape[:-1], device=xyz_locs.device)
 
         if alpha_mask.any():
-            # xyz_sampled = self.normalize_coord(xyz_locs[alpha_mask])
             feats, _ = self.get_coding(xyz_locs[alpha_mask])
             validsigma = self.linear_mat(feats, is_train=False)[..., 0]
             sigma[alpha_mask] = self.basis2density(validsigma)
@@ -850,8 +763,6 @@ class FactorFields(torch.nn.Module):
         ks = 3
         alpha = alpha.clamp(0, 1)[None, None]
         alpha = F.max_pool3d(alpha, kernel_size=ks, padding=ks // 2, stride=1).view(gridSize[::-1])
-        # alpha[alpha>=self.alphaMask_thres] = 1
-        # alpha[alpha<self.alphaMask_thres] = 0
 
         # filter floaters
         min_size = np.mean(alpha.shape[-3:]).item()
@@ -863,7 +774,6 @@ class FactorFields(torch.nn.Module):
             alpha = skimage.morphology.remove_small_objects(alpha.cpu().numpy() >= alphaMask_thres, min_size=min_size,
                                                             connectivity=1)
             alpha = torch.FloatTensor(alpha).to(self.device)
-        # torch.save(alpha, '/home/anpei/code/TensoRF_draft//alpha.th')
 
         if is_update_alphaMask:
             self.alphaMask = AlphaGridMask(self.device, self.inward_aabb, alpha)
@@ -880,15 +790,12 @@ class FactorFields(torch.nn.Module):
         new_aabb = torch.stack((xyz_min, xyz_max))
 
         total = torch.sum(alpha)
-        print(f"bbox: {xyz_min, xyz_max} alpha rest %%%f" % (total / total_voxels * 100))
         return new_aabb
 
     @torch.no_grad()
     def shrink(self, new_aabb):
-        print(f'=======> shrinking ...')
-        # self.setup_params(new_aabb.tolist())
-        # basises, coeffs =  self.init_basis(), self.init_coef()
 
+        self.setup_params(new_aabb.tolist())
         if self.cfg.model.coeff_type != 'none':
             del self.coeffs
             self.coeffs = self.init_coef()
@@ -903,7 +810,6 @@ class FactorFields(torch.nn.Module):
 
     @torch.no_grad()
     def filtering_rays(self, all_rays, all_rgbs, N_samples=256, chunk=10240 * 5, bbox_only=False):
-        print('========> filtering rays ...')
         tt = time.time()
         N = torch.tensor(all_rays.shape[:-1]).prod()
 
@@ -932,9 +838,6 @@ class FactorFields(torch.nn.Module):
             rays_chunk[mask_inbbox].cpu(), all_rgbs[idx_chunk][mask_inbbox.cpu()]
             length_current += length
 
-        # mask_filtered = torch.cat(mask_filtered).view(all_rgbs.shape[:-1])
-
-        print(f'Ray filtering done! takes {time.time() - tt} s. ray mask ratio: {length_current / N}')
         return all_rays[:length_current], all_rgbs[:length_current]
 
     def forward(self, rays_chunk, white_bg=True, is_train=False, ndc_ray=False, N_samples=-1):
@@ -958,12 +861,6 @@ class FactorFields(torch.nn.Module):
             dists = torch.cat((z_vals[:, 1:] - z_vals[:, :-1], torch.zeros_like(z_vals[:, :1])), dim=-1)
 
         viewdirs = viewdirs.view(-1, 1, 3).expand(xyz_sampled.shape)
-        # if 'reconstructions' == self.cfg.defaults.mode:
-        #     assert 7 == rays_chunk.shape[-1]
-        #     self.scene_idx = int(rays_chunk[0, -1])
-        # else:
-        #     self.scene_idx = 0
-
         ray_valid = torch.ones_like(xyz_sampled[..., 0]).bool() if self.is_unbound else inner_mask
         if self.alphaMask is not None:
             alpha_inner_valid = self.alphaMask.sample_alpha(xyz_sampled[inner_mask]) > 0.5
@@ -974,7 +871,6 @@ class FactorFields(torch.nn.Module):
 
         coeffs = torch.zeros((1, sum(self.cfg.model.basis_dims)), device=xyz_sampled.device)
         if ray_valid.any():
-            # xyz_sampled = self.normalize_coord(xyz_sampled[ray_valid])
             feats, coeffs = self.get_coding(xyz_sampled[ray_valid])
             feat = self.linear_mat(feats, is_train=is_train)
             sigma[ray_valid] = self.basis2density(feat[..., 0])
@@ -998,6 +894,5 @@ class FactorFields(torch.nn.Module):
 
         with torch.no_grad():
             depth_map = torch.sum(weight * z_vals, -1)
-        #     depth_map = depth_map + (1. - acc_map) * rays_chunk[..., -1]
 
         return rgb_map, depth_map, coeffs

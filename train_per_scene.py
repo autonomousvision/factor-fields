@@ -61,14 +61,14 @@ def render_test(cfg):
 
 
     logfolder = os.path.dirname(cfg.defaults.ckpt)
-    if cfg.exporation.render_train:
+    if cfg.exportation.render_train:
         os.makedirs(f'{logfolder}/imgs_train_all', exist_ok=True)
         train_dataset = dataset(cfg.dataset.datadir, split='train', is_stack=True)
         PSNRs_test = evaluation(train_dataset, model, render_ray, f'{logfolder}/imgs_train_all/',
                                 N_vis=-1, N_samples=-1, white_bg=white_bg, ndc_ray=ndc_ray, device=device)
         print(f'======> {cfg.defaults.expname} train all psnr: {np.mean(PSNRs_test)} <========================')
 
-    if cfg.exporation.render_test:
+    if cfg.exportation.render_test:
         # model.upsample_volume_grid()
         os.makedirs(f'{logfolder}/{cfg.defaults.expname}/imgs_test_all', exist_ok=True)
         evaluation(test_dataset, model, render_ray, f'{logfolder}/{cfg.defaults.expname}/imgs_test_all/',
@@ -77,13 +77,13 @@ def render_test(cfg):
         print(f'======> {cfg.defaults.expname} test all psnr: {np.mean(PSNRs_test)} n_params: {n_params} <========================')
 
 
-    if cfg.exporation.render_path:
+    if cfg.exportation.render_path:
         c2ws = test_dataset.render_path
         os.makedirs(f'{logfolder}/{cfg.defaults.expname}/imgs_path_all', exist_ok=True)
         evaluation_path(test_dataset, model, c2ws, render_ray, f'{logfolder}/{cfg.defaults.expname}/imgs_path_all/',
                         N_samples=-1, white_bg=white_bg, ndc_ray=ndc_ray, device=device)
 
-    if cfg.exporation.export_mesh:
+    if cfg.exportation.export_mesh:
         alpha, _ = model.getDenseAlpha()
         convert_sdf_samples_to_ply(alpha.cpu(), f'{logfolder}/{cfg.defaults.expname}.ply', bbox=model.aabb.cpu(),
                                    level=0.005)
@@ -228,7 +228,7 @@ def reconstruction(cfg):
     np.savetxt(f'{logfolder}/imgs_test_all/time.txt',[time_iter])
     model.save(f'{logfolder}/{cfg.defaults.expname}.th')
 
-    if cfg.exporation.render_test:
+    if cfg.exportation.render_test:
         os.makedirs(f'{logfolder}/imgs_test_all', exist_ok=True)
         PSNRs_test = evaluation(test_dataset, model, render_ray, f'{logfolder}/imgs_test_all/',
                                 N_vis=-1, N_samples=-1, white_bg=white_bg, ndc_ray=ndc_ray, device=device)
@@ -249,9 +249,9 @@ if __name__ == '__main__':
     second_conf = OmegaConf.load(path_config)
     cfg = OmegaConf.merge(base_conf, second_conf, cli_conf)
 
-    if cfg.exporation.render_only and (cfg.exporation.render_test or cfg.exporation.render_path):
+    if cfg.exportation.render_only and (cfg.exportation.render_test or cfg.exportation.render_path):
         render_test(cfg)
-    elif cfg.exporation.export_mesh_only:
+    elif cfg.exportation.export_mesh_only:
         export_mesh(cfg)
     else:
         reconstruction(cfg)

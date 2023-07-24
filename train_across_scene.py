@@ -36,9 +36,6 @@ def export_mesh(cfg):
     model.load(ckpt)
 
     alpha, _ = model.getDenseAlpha([512]*3)
-    # scale, offset = 188.5277, np.array([-7.6229210e+00, -5.7847214e-01,  5.9724469e+02])
-    # scale, offset = 231.0682, np.array([-28.461128, -13.186272, 641.4886])
-    # torch.save(alpha,f'{args.ckpt[:-3]}_occ.th')
     convert_sdf_samples_to_ply(alpha.cpu(), f'{cfg.defaults.ckpt[:-3]}.ply', bbox=model.aabb.cpu(), level=0.2)
 
 # @torch.no_grad()
@@ -72,14 +69,14 @@ def render_test(cfg):
 
 
     logfolder = os.path.dirname(cfg.defaults.ckpt)
-    if cfg.exporation.render_train:
+    if cfg.exportation.render_train:
         os.makedirs(f'{logfolder}/imgs_train_all', exist_ok=True)
         train_dataset = dataset(cfg.dataset.datadir, split='train', is_stack=True)
         PSNRs_test = evaluation(train_dataset, model, render_ray, f'{logfolder}/imgs_train_all/',
                                 N_vis=-1, N_samples=-1, white_bg=white_bg, ndc_ray=ndc_ray, device=device)
         print(f'======> {cfg.defaults.expname} train all psnr: {np.mean(PSNRs_test)} <========================')
 
-    if cfg.exporation.render_test:
+    if cfg.exportation.render_test:
         # model.upsample_volume_grid()
         os.makedirs(f'{logfolder}/{cfg.defaults.expname}/imgs_test_all', exist_ok=True)
         evaluation(test_dataset, model, render_ray, f'{logfolder}/{cfg.defaults.expname}/imgs_test_all/',
@@ -88,13 +85,13 @@ def render_test(cfg):
         print(f'======> {cfg.defaults.expname} test all psnr: {np.mean(PSNRs_test)} n_params: {n_params} <========================')
 
 
-    if cfg.exporation.render_path:
+    if cfg.exportation.render_path:
         c2ws = test_dataset.render_path
         os.makedirs(f'{logfolder}/{cfg.defaults.expname}/imgs_path_all', exist_ok=True)
         evaluation_path(test_dataset, model, c2ws, render_ray, f'{logfolder}/{cfg.defaults.expname}/imgs_path_all/',
                         N_samples=-1, white_bg=white_bg, ndc_ray=ndc_ray, device=device)
 
-    if cfg.exporation.export_mesh:
+    if cfg.exportation.export_mesh:
         alpha, _ = model.getDenseAlpha(times=1)
         convert_sdf_samples_to_ply(alpha.cpu(), f'{logfolder}/{cfg.defaults.expname}.ply', bbox=model.aabb.cpu(),level=0.02)
 
@@ -155,24 +152,9 @@ def reconstruction(cfg):
     torch.cuda.empty_cache()
     PSNRs, PSNRs_test = [], [0]
 
-    # allrays, allrgbs = train_dataset.all_rays, train_dataset.all_rgbs
-    # if not cfg.dataset.ndc_ray and not cfg.dataset.is_unbound:
-    #     allrays, allrgbs = model.filtering_rays(allrays, allrgbs, bbox_only=True)
-    # trainingSampler = SimpleSampler(allrays.shape[0], cfg.training.batch_size)
-
-    Ortho_reg_weight = cfg.training.Ortho_weight
-    print("initial Ortho_reg_weight", Ortho_reg_weight)
-    L1_reg_weight = cfg.training.L1_weight_inital
-    print("initial L1_reg_weight", L1_reg_weight)
-    TV_weight_density, TV_weight_app = cfg.training.TV_weight_density, cfg.training.TV_weight_app
-    tvreg = TVLoss()
-    print(f"initial TV_weight density: {TV_weight_density} appearance: {TV_weight_app}")
-
     steps_inner = 16
     start = time.time()
-    # iterator = iter(trainLoader)
     pbar = tqdm(range(cfg.training.n_iters//steps_inner), miniters=cfg.defaults.progress_refresh_rate, file=sys.stdout)
-    # for iteration in pbar:
     for iteration in pbar:
 
         # train_dataset.update_index()
@@ -227,14 +209,14 @@ def reconstruction(cfg):
     np.savetxt(f'{logfolder}/imgs_test_all/time.txt',[time_iter])
     model.save(f'{logfolder}/{cfg.defaults.expname}.th')
 
-    # if args.render_train:
-    #     os.makedirs(f'{logfolder}/imgs_train_all', exist_ok=True)
-    #     train_dataset = dataset(cfg.defaults.datadir, split='train', downsample=args.downsample_train, is_stack=True)
-    #     PSNRs_test = evaluation(train_dataset,model, args, renderer, f'{logfolder}/imgs_train_all/',
-    #                             N_vis=-1, N_samples=-1, white_bg = white_bg, ndc_ray=ndc_ray,device=device)
-    #     print(f'======> {cfg.defaults.expname} test all psnr: {np.mean(PSNRs_test)} <========================')
-    #
-    if cfg.exporation.render_test:
+    if args.render_train:
+        os.makedirs(f'{logfolder}/imgs_train_all', exist_ok=True)
+        train_dataset = dataset(cfg.defaults.datadir, split='train', downsample=args.downsample_train, is_stack=True)
+        PSNRs_test = evaluation(train_dataset,model, args, renderer, f'{logfolder}/imgs_train_all/',
+                                N_vis=-1, N_samples=-1, white_bg = white_bg, ndc_ray=ndc_ray,device=device)
+        print(f'======> {cfg.defaults.expname} test all psnr: {np.mean(PSNRs_test)} <========================')
+    
+    if cfg.exportation.render_test:
         os.makedirs(f'{logfolder}/imgs_test_all', exist_ok=True)
         if 'reconstructions' in cfg.defaults.mode:
             model.scene_idx = test_dataset.test_index
@@ -244,7 +226,7 @@ def reconstruction(cfg):
         n_params = model.n_parameters()
         print(f'======> {cfg.defaults.expname} test all psnr: {np.mean(PSNRs_test)} n_params: {n_params} <========================')
 
-    if cfg.exporation.export_mesh:
+    if cfg.exportation.export_mesh:
         cfg.defaults.ckpt = f'{logfolder}/{cfg.defaults.expname}.th'
         export_mesh(cfg)
 
@@ -262,9 +244,9 @@ if __name__ == '__main__':
     cfg = OmegaConf.merge(base_conf, second_conf, cli_conf)
     print(cfg)
 
-    if cfg.exporation.render_only and (cfg.exporation.render_test or cfg.exporation.render_path):
+    if cfg.exportation.render_only and (cfg.exportation.render_test or cfg.exportation.render_path):
         render_test(cfg)
-    elif cfg.exporation.export_mesh_only:
+    elif cfg.exportation.export_mesh_only:
         export_mesh(cfg)
     else:
         reconstruction(cfg)
