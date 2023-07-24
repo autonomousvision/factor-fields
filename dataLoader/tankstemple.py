@@ -169,12 +169,14 @@ class TanksTempleDataset(Dataset):
 
         self.poses = torch.stack(self.poses)
 
-        # center = torch.mean(self.scene_bbox, dim=0)
-        # radius = torch.norm(self.scene_bbox[1] - center) * 1.2
-        # up = torch.mean(self.poses[:, :3, 1], dim=0).tolist()
-        # pos_gen = circle(radius=radius, h=-0.2 * up[1], axis='y')
-        # self.render_path = gen_path(pos_gen, up=up, frames=200)
-        # self.render_path[:, :3, 3] += center
+        frames = 200
+        scene_bbox = torch.tensor(self.scene_bbox).float()
+        center = torch.mean(scene_bbox, dim=0)
+        radius = torch.norm(scene_bbox[1] - center) * 1.2
+        up = torch.mean(self.poses[:, :3, 1], dim=0).tolist()
+        pos_gen = circle(radius=radius, h=-0.2 * up[1], axis='y')
+        self.render_path = gen_path(pos_gen, up=up, frames=frames)
+        self.render_path[:, :3, 3] += center
 
         if 'train' == self.split:
             if not self.is_stack:

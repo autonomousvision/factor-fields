@@ -88,8 +88,8 @@ class NSVF(Dataset):
         self.directions = get_ray_directions(self.img_wh[1], self.img_wh[0], [self.intrinsics[0,0],self.intrinsics[1,1]], center=self.intrinsics[:2,2])  # (h, w, 3)
         self.directions = self.directions / torch.norm(self.directions, dim=-1, keepdim=True)
 
-
-        self.render_path = torch.stack([pose_spherical(angle, -30.0, 4.0) for angle in np.linspace(-180,180,40+1)[:-1]], 0)
+        frames = 200
+        self.render_path = torch.stack([pose_spherical(angle, -30.0, 4.0) for angle in np.linspace(-180,180,frames+1)[:-1]], 0)
         
         self.poses = []
         self.all_rays = []
