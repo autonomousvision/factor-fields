@@ -76,7 +76,7 @@ The training script can be found at `2D_set_regression.ipynb`
 python train_across_scene.py configs/nerf_set.yaml
 ```
 
-<img src="https://github.com/apchenstu/GIFs/blob/main/FactorField-few-shot.gif" alt="GIF" width="500px"
+<img src="https://github.com/apchenstu/GIFs/blob/main/FactorField-few-shot.gif" alt="GIF" width="500px">
 
 
 ## More examples
