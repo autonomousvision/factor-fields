@@ -7,7 +7,7 @@ from omegaconf import OmegaConf
 import torch.nn.functional as F
 
 sys.path.append('..')
-from models.sparseCoding import sparseCoding 
+from models.FactorFields import FactorFields 
 
 from utils import SimpleSampler,TVLoss
 from dataLoader import dataset_dict
@@ -119,7 +119,7 @@ train_loader = DataLoader(train_dataset,
 batch_size = cfg.training.batch_size
 n_iter = cfg.training.n_iters
 
-model = sparseCoding(cfg, device)
+model = FactorFields(cfg, device)
 tvreg = TVLoss()
 print(model)
 print('total parameters: ', model.n_parameters())
