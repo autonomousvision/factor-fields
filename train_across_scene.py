@@ -209,7 +209,7 @@ def reconstruction(cfg):
     np.savetxt(f'{logfolder}/imgs_test_all/time.txt',[time_iter])
     model.save(f'{logfolder}/{cfg.defaults.expname}.th')
 
-    if args.render_train:
+    if cfg.render_train:
         os.makedirs(f'{logfolder}/imgs_train_all', exist_ok=True)
         train_dataset = dataset(cfg.defaults.datadir, split='train', downsample=args.downsample_train, is_stack=True)
         PSNRs_test = evaluation(train_dataset,model, args, renderer, f'{logfolder}/imgs_train_all/',
