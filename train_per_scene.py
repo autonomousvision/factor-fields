@@ -37,9 +37,6 @@ def export_mesh(ckpt_path):
     model.load(ckpt)
 
     alpha, _ = model.getDenseAlpha()
-    # scale, offset = 188.5277, np.array([-7.6229210e+00, -5.7847214e-01,  5.9724469e+02])
-    # scale, offset = 231.0682, np.array([-28.461128, -13.186272, 641.4886])
-    # torch.save(alpha,f'{args.ckpt[:-3]}_occ.th')
     convert_sdf_samples_to_ply(alpha.cpu(), f'{ckpt.defaults.ckpt[:-3]}.ply', bbox=model.aabb.cpu(), level=0.005)
 
 
@@ -251,7 +248,7 @@ if __name__ == '__main__':
 
     if cfg.exportation.render_only and (cfg.exportation.render_test or cfg.exportation.render_path):
         render_test(cfg)
-    elif cfg.exportation.export_mesh_only:
+    elif cfg.exportation.export_mesh_only or cfg.exportation.export_mesh:
         export_mesh(cfg)
     else:
         reconstruction(cfg)
