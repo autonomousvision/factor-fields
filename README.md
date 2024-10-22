@@ -28,7 +28,7 @@ pip install git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/to
 Please ensure that you download the corresponding dataset and extract its contents into the `data` folder.
 
 ## Image
-* [Data - Image Set](https://1drv.ms/u/s!Ard0t_p4QWIMiHdstRyBDyH3XOIa?e=VlfZiv)
+* [Data - Image Set](https://1drv.ms/u/c/0c624178fab774b7/Ebd0t_p4QWIggAx3BAAAAAABikvhj5m_rVm1-qIpYFyrFg?e=hyTeZf)
 
 The training script can be found at `scripts/2D_regression.ipynb`, and the configuration file is located at `configs/image.yaml`.
 
@@ -37,7 +37,7 @@ The training script can be found at `scripts/2D_regression.ipynb`, and the confi
 </p>
 
 ## SDF
-* [Data - Mesh set](https://1drv.ms/u/s!Ard0t_p4QWIMiHhDy0Q8-izCmFW8?e=rXAnHM)
+* [Data - Mesh set](https://1drv.ms/u/c/0c624178fab774b7/Ebd0t_p4QWIggAx4BAAAAAABbouT0SD3PCChlfTQJL3XzA?e=ImcsAj)
 
 The training script can be found at `scripts/sdf_regression.ipynb`, and the configuration file is located at `configs/sdf.yaml`.
 
